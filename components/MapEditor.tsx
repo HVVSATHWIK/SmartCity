@@ -1,72 +1,128 @@
-
-import React from 'react';
-import { GRID_SIZE } from '../constants';
-import { CityGrid, ElementType, Tool } from '../types';
+import React, { useRef, useEffect, useImperativeHandle, forwardRef, useState } from 'react';
+import { MapContainer, TileLayer, FeatureGroup, useMap } from 'react-leaflet';
+import { EditControl } from 'react-leaflet-draw';
+import L from 'leaflet';
+import 'leaflet-draw';
+import { CityData, RoadParameters } from '../types';
 
 interface MapEditorProps {
-  grid: CityGrid;
-  handleCellClick: (x: number, y: number) => void;
-  tool: Tool;
-  setTool: (tool: Tool) => void;
+    cityConfig: CityData;
+    onRoadsChange: (length: number) => void;
 }
 
-const toolIcons: Record<Tool, string> = {
-    [Tool.ROAD]: '─',
-    [Tool.BUILDING]: 'B',
-    [Tool.TRAFFIC_LIGHT]: '🚦',
-    [Tool.ERASER]: '⌫',
-}
-
-const toolColors: Record<Tool, string> = {
-    [Tool.ROAD]: 'hover:bg-gray-600 ring-gray-400',
-    [Tool.BUILDING]: 'hover:bg-blue-600 ring-blue-400',
-    [Tool.TRAFFIC_LIGHT]: 'hover:bg-yellow-600 ring-yellow-400',
-    [Tool.ERASER]: 'hover:bg-red-600 ring-red-400',
+// A component to recenter the map when the city changes
+const MapRecenter: React.FC<{ cityConfig: CityData }> = ({ cityConfig }) => {
+    const map = useMap();
+    useEffect(() => {
+        map.setView([cityConfig.lat, cityConfig.lng], cityConfig.zoom);
+    }, [cityConfig, map]);
+    return null;
 };
 
-const cellColors: Record<ElementType, string> = {
-    [ElementType.EMPTY]: 'bg-gray-700 hover:bg-gray-600',
-    [ElementType.ROAD]: 'bg-gray-500',
-    [ElementType.BUILDING]: 'bg-blue-500',
-    [ElementType.INTERSECTION]: 'bg-gray-600',
-    [ElementType.TRAFFIC_LIGHT]: 'bg-yellow-500 flex items-center justify-center text-xs',
-};
+const MapEditor = forwardRef(({ cityConfig, onRoadsChange }: MapEditorProps, ref) => {
+    const featureGroupRef = useRef<L.FeatureGroup>(null);
+    // Fix: Add state to hold map instance to avoid accessing protected property '_map'
+    const [map, setMap] = useState<L.Map | null>(null);
 
-const MapEditor: React.FC<MapEditorProps> = ({ grid, handleCellClick, tool, setTool }) => {
-  return (
-    <div className="bg-gray-900 p-4 rounded-lg shadow-lg">
-        <div className="mb-4">
-            <h3 className="text-lg font-semibold mb-2 text-gray-300">Editor Tools</h3>
-            <div className="grid grid-cols-4 gap-2">
-                {Object.values(Tool).map(t => (
-                    <button 
-                        key={t}
-                        onClick={() => setTool(t)}
-                        className={`p-2 rounded-md transition-all duration-200 text-lg font-bold
-                            ${tool === t ? 'ring-2 ring-offset-2 ring-offset-gray-800 ' + toolColors[t].split(' ')[2] : 'bg-gray-700 ' + toolColors[t]} `}
-                        title={t.charAt(0) + t.slice(1).toLowerCase()}
-                    >
-                        {toolIcons[t]}
-                    </button>
-                ))}
-            </div>
+    const calculateTotalRoadLength = () => {
+        let totalMeters = 0;
+        featureGroupRef.current?.eachLayer(layer => {
+            if (layer instanceof L.Polyline) {
+                const latlngs = layer.getLatLngs() as L.LatLng[];
+                for (let i = 0; i < latlngs.length - 1; i++) {
+                    totalMeters += latlngs[i].distanceTo(latlngs[i + 1]);
+                }
+            }
+        });
+        onRoadsChange(totalMeters / 1000);
+    };
+
+    const handleCreate = (e: any) => {
+        featureGroupRef.current?.addLayer(e.layer);
+        calculateTotalRoadLength();
+    };
+
+    const handleEdit = () => {
+        calculateTotalRoadLength();
+    };
+    
+    const handleDelete = () => {
+        calculateTotalRoadLength();
+    };
+
+    useImperativeHandle(ref, () => ({
+        resetMap() {
+            featureGroupRef.current?.clearLayers();
+            calculateTotalRoadLength();
+        },
+        addRoad(params: RoadParameters) {
+            const { length_km, orientation } = params;
+            // Fix: Access map instance from state instead of protected property '_map'
+            if (!length_km || !orientation || !featureGroupRef.current || !map) return;
+            
+            const cityCenter = map.getCenter();
+            const meters = length_km * 1000;
+            
+            const latOffset = (orientation === 'north') ? (meters / 111000) : (orientation === 'south') ? (-meters / 111000) : 0;
+            const lngOffset = (orientation === 'east') ? (meters / (111000 * Math.cos(cityCenter.lat * Math.PI / 180))) : (orientation === 'west') ? (-meters / (111000 * Math.cos(cityCenter.lat * Math.PI / 180))) : 0;
+
+            const startPoint = L.latLng(cityCenter.lat - latOffset/2, cityCenter.lng - lngOffset/2);
+            const endPoint = L.latLng(cityCenter.lat + latOffset/2, cityCenter.lng + lngOffset/2);
+            
+            const newRoad = L.polyline([startPoint, endPoint], {
+                color: '#16a34a',
+                weight: 5,
+                dashArray: '10, 5'
+            });
+            
+            featureGroupRef.current.addLayer(newRoad);
+            map.fitBounds(newRoad.getBounds().pad(0.2));
+            calculateTotalRoadLength();
+        }
+    }));
+
+    // Fix: Component to get map instance via useMap hook and set it to state
+    const MapInstanceController = () => {
+        const mapInstance = useMap();
+        useEffect(() => {
+            setMap(mapInstance);
+        }, [mapInstance]);
+        return null;
+    }
+    
+    return (
+        <div className="w-full rounded-lg border-2 border-gray-200 shadow-inner overflow-hidden">
+            <MapContainer center={[cityConfig.lat, cityConfig.lng]} zoom={cityConfig.zoom} scrollWheelZoom={true}>
+                <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                />
+                <FeatureGroup ref={featureGroupRef}>
+                    <EditControl
+                        position="topright"
+                        onCreated={handleCreate}
+                        onEdited={handleEdit}
+                        onDeleted={handleDelete}
+                        draw={{
+                            polygon: false,
+                            marker: false,
+                            circle: false,
+                            circlemarker: false,
+                            rectangle: false,
+                            polyline: {
+                                shapeOptions: {
+                                    color: '#e53e3e',
+                                    weight: 4
+                                }
+                            }
+                        }}
+                    />
+                </FeatureGroup>
+                <MapRecenter cityConfig={cityConfig} />
+                <MapInstanceController />
+            </MapContainer>
         </div>
-
-      <div className="grid gap-0.5" style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`}}>
-        {grid.map((row, y) =>
-          row.map((cell, x) => (
-            <div
-              key={`${x}-${y}`}
-              onClick={() => handleCellClick(x, y)}
-              className={`aspect-square cursor-pointer transition-colors duration-150 ${cellColors[cell.type]}`}
-            >
-              {cell.type === ElementType.TRAFFIC_LIGHT && '🚦'}
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-};
+    );
+});
 
 export default MapEditor;

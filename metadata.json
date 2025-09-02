@@ -1,5 +1,5 @@
 {
-  "name": "3D Smart City Simulator",
-  "description": "An interactive 3D smart city simulator where you can design a city layout on a 2D map and see it come to life. The simulation includes dynamic traffic, functioning traffic signals, and real-time air quality monitoring at intersections, offering insights into urban planning and environmental impact.",
+  "name": "Smart City Policy Simulator",
+  "description": "An interactive dashboard for urban planning and causal impact analysis, powered by Gemini.",
   "requestFramePermissions": []
 }

@@ -1,94 +1,84 @@
-import { Vector3 } from 'three';
+// Fix: By importing '@react-three/fiber', we enable automatic JSX namespace augmentation.
+// This resolves errors like "Property 'mesh' does not exist on type 'JSX.IntrinsicElements'"
+// for all react-three-fiber components.
+import '@react-three/fiber';
 
-export enum ElementType {
-  EMPTY = 'EMPTY',
-  ROAD = 'ROAD',
-  BUILDING = 'BUILDING',
-  INTERSECTION = 'INTERSECTION',
-  TRAFFIC_LIGHT = 'TRAFFIC_LIGHT',
+export interface CityData {
+    lat: number;
+    lng: number;
+    zoom: number;
+    base_pm25: number;
+    base_traffic: number;
+    causal_coefficient: number;
+    economic_factor: number;
+    mortality_rate: number;
+    annual_deaths_baseline: number;
 }
 
-export interface GridCell {
-  type: ElementType;
-  id: string;
+export interface Cities {
+    [key: string]: CityData;
 }
 
-export type CityGrid = GridCell[][];
-
-export enum Tool {
-  ROAD = 'ROAD',
-  BUILDING = 'BUILDING',
-  TRAFFIC_LIGHT = 'TRAFFIC_LIGHT',
-  ERASER = 'ERASER',
+// For Gemini response
+export interface RoadParameters {
+    length_km: number;
+    orientation: 'north' | 'south' | 'east' | 'west';
 }
 
-export enum LightState {
-  GREEN_NS = 'GREEN_NS', // North-South
-  GREEN_EW = 'GREEN_EW', // East-West
+export interface GeminiDesignResponse {
+    action: "add_road";
+    parameters: RoadParameters;
 }
 
-export interface IntersectionController {
-  id: string;
-  cells: { x: number; y: number }[];
-  state: LightState;
-  timer: number;
-}
-
-export interface Vehicle {
-    id: number;
-    position: Vector3;
-    path: {x: number, y: number}[];
-    pathIndex: number;
-    speed: number;
-    color: string;
-}
-
-export interface AirQualityData {
-  [key: string]: number; // key is `${x}-${y}`
-}
-
-// Minimal interface for Leaflet's LatLngBounds
+// Fix: Add missing type definitions for services/osmService.ts
 export interface MapBounds {
-  getSouth: () => number;
-  getWest: () => number;
-  getNorth: () => number;
-  getEast: () => number;
+    getSouth: () => number;
+    getWest: () => number;
+    getNorth: () => number;
+    getEast: () => number;
 }
 
-// Types for parsing OpenStreetMap data from Overpass API
 export interface OsmNode {
-  type: 'node';
-  id: number;
-  lat: number;
-  lon: number;
+    type: 'node';
+    id: number;
+    lat: number;
+    lon: number;
 }
 
 export interface OsmWay {
-  type: 'way';
-  id: number;
-  nodes: number[];
-  tags?: { [key: string]: string };
+    type: 'way';
+    id: number;
+    nodes: number[];
 }
 
 export type OsmElement = OsmNode | OsmWay;
 
 export interface OsmData {
-  elements: OsmElement[];
+    elements: OsmElement[];
 }
 
 export interface RoadSegment {
-  start: { lat: number; lon: number };
-  end: { lat: number; lon: number };
+    start: { lat: number, lon: number };
+    end: { lat: number, lon: number };
 }
 
-// Types for Policy Simulation based on the research paper
-export interface PolicyIntervention {
-  trafficReductionPercentage: number;
+// Fix: Add missing type definition for components/three/Road.tsx
+export enum ElementType {
+    ROAD,
+    INTERSECTION,
+    TRAFFIC_LIGHT,
+    EMPTY,
+    BUILDING,
 }
 
-export interface PolicyAnalysisResult {
-  predictedAqiImpact: string;
-  healthRiskAssessment: string;
-  economicTradeoffs: string;
-  recommendations: string;
+// Fix: Add missing type definition for components/three/Vehicle.tsx
+export interface Vehicle {
+    position: [number, number, number];
+    color: string;
+}
+
+// Fix: Add missing type definition for components/three/TrafficLight.tsx
+export enum LightState {
+    GREEN_NS,
+    GREEN_EW,
 }

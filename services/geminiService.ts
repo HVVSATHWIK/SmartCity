@@ -1,77 +1,64 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { PolicyAnalysisResult, PolicyIntervention } from "../types";
+import { GeminiDesignResponse } from "../types";
 
-if (!process.env.API_KEY) {
-  console.warn("API_KEY environment variable not set. AI features will be disabled.");
-}
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
-
-const analysisSchema = {
+const designSchema = {
     type: Type.OBJECT,
     properties: {
-        predictedAqiImpact: {
+        action: {
             type: Type.STRING,
-            description: "A quantitative and qualitative assessment of the predicted impact on the Air Quality Index (AQI) due to the traffic intervention."
+            enum: ["add_road"]
         },
-        healthRiskAssessment: {
-            type: Type.STRING,
-            description: "An analysis of the potential public health outcomes (e.g., changes in respiratory conditions, averted hospital admissions) based on the predicted AQI changes, referencing the Health Risk Index (HRI) concept."
-        },
-        economicTradeoffs: {
-            type: Type.STRING,
-            description: "An evaluation of the economic consequences, including mobility-related GDP impacts and potential benefits from reduced congestion."
-        },
-        recommendations: {
-            type: Type.STRING,
-            description: "Actionable policy recommendations to optimize the balance between health benefits and economic costs."
-        },
+        parameters: {
+            type: Type.OBJECT,
+            properties: {
+                length_km: {
+                    type: Type.NUMBER,
+                    description: "The length of the road in kilometers."
+                },
+                orientation: {
+                    type: Type.STRING,
+                    enum: ['north', 'south', 'east', 'west'],
+                    description: "The cardinal direction for the road from the city center."
+                }
+            },
+            required: ["length_km", "orientation"]
+        }
     },
-    required: ["predictedAqiImpact", "healthRiskAssessment", "economicTradeoffs", "recommendations"]
+    required: ["action", "parameters"]
 };
 
+export const getDesignFromPrompt = async (prompt: string): Promise<GeminiDesignResponse | string> => {
+    const systemInstruction = `
+        You are an urban planning AI assistant. Your task is to interpret a user's natural language request for city design and convert it into a structured JSON object.
+        The JSON must conform to the provided schema.
+        The only valid action is "add_road".
+        The parameters for "add_road" must include "length_km" (a number) and "orientation" (a string which can be 'north', 'south', 'east', or 'west').
+        If the user's request is unclear or does not specify a length or direction, try your best to interpret the user's request to fit the schema.
+        
+        Example user prompt: "Create a 15km highway going north"
+        Example output: {"action": "add_road", "parameters": {"length_km": 15, "orientation": "north"}}
+    `;
 
-export const getPolicyImpactAnalysis = async (cityData: object, intervention: PolicyIntervention): Promise<PolicyAnalysisResult | string> => {
-  if (!process.env.API_KEY) {
-    return "AI analysis is disabled because the API key is not configured.";
-  }
-  
-  const prompt = `
-    You are an AI embodiment of the "Multi-Factor Causal Optimization Framework for Smart City Health."
-    Your task is to analyze a simulated city's data and a proposed policy intervention to provide actionable insights for urban policymakers.
-    
-    Framework Core Concepts:
-    - You must quantify the causal effects of traffic interventions on Air Quality Index (AQI).
-    - You must assess the downstream impact on public health (Health Risk Index - HRI) and economic sustainability.
-    - Your analysis must consider urban form features (derived from the city data) as moderators.
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                systemInstruction: systemInstruction,
+                responseMimeType: "application/json",
+                responseSchema: designSchema,
+            },
+        });
 
-    Input Data:
-    1.  City Data: This describes the urban layout (road density, building placement, intersection count).
-        ${JSON.stringify(cityData, null, 2)}
-
-    2.  Policy Intervention: The specific traffic management policy to be evaluated.
-        ${JSON.stringify(intervention, null, 2)}
-
-    Your Task:
-    Based on the provided City Data and Policy Intervention, perform a causal analysis and generate a structured report.
-    The response MUST be in the specified JSON format.
-  `;
-
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: analysisSchema,
-      },
-    });
-    
-    // The response text is a JSON string. Parse it.
-    return JSON.parse(response.text) as PolicyAnalysisResult;
-
-  } catch (error) {
-    console.error("Error fetching analysis from Gemini API:", error);
-    return "An error occurred while analyzing the city data. The AI model may have returned an invalid response. Please check the console for details.";
-  }
+        const cleanedText = response.text.replace(/```json|```/g, '').trim();
+        return JSON.parse(cleanedText) as GeminiDesignResponse;
+    } catch (error) {
+        console.error("Error fetching design from Gemini API:", error);
+        if (error instanceof Error) {
+           return `An error occurred while analyzing the design prompt: ${error.message}`;
+        }
+        return "An unknown error occurred while analyzing the design prompt.";
+    }
 };
