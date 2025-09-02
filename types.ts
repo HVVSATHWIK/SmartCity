@@ -80,3 +80,15 @@ export interface RoadSegment {
   start: { lat: number; lon: number };
   end: { lat: number; lon: number };
 }
+
+// Types for Policy Simulation based on the research paper
+export interface PolicyIntervention {
+  trafficReductionPercentage: number;
+}
+
+export interface PolicyAnalysisResult {
+  predictedAqiImpact: string;
+  healthRiskAssessment: string;
+  economicTradeoffs: string;
+  recommendations: string;
+}
