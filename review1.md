@@ -1,6 +1,6 @@
 # Smart City Road Layout Design — Probability Flow (Detailed Explanation)
 
-This version explains each problem in **clear sentences** instead of short points.
+This version explains each problem in *clear sentences* instead of short points.
 
 ---
 
@@ -20,7 +20,7 @@ We can use probability concepts to analyze and solve each of these issues.
 
 Traffic delays mainly happen because vehicles do not arrive at a junction in a fixed manner. Instead, they arrive randomly. To model this:
 
-* The **Poisson distribution** is used to represent the number of vehicles arriving at a junction during a specific period of time. For example, if on average 5 cars arrive per minute, Poisson distribution helps us calculate the probability of exactly 3, 4, or 7 cars arriving in a given minute. This shows how traffic intensity can suddenly increase or decrease.
+* The *Poisson distribution* is used to represent the number of vehicles arriving at a junction during a specific period of time. For example, if on average 5 cars arrive per minute, Poisson distribution helps us calculate the probability of exactly 3, 4, or 7 cars arriving in a given minute. This shows how traffic intensity can suddenly increase or decrease.
 
   Formula:
 
@@ -28,7 +28,7 @@ Traffic delays mainly happen because vehicles do not arrive at a junction in a f
   P(N(t)=k) = \frac{(\lambda t)^k e^{-\lambda t}}{k!}
   $$
 
-* The **Exponential distribution** is used to represent the waiting time between vehicle arrivals or the time a vehicle spends waiting at a signal. For example, if the average waiting time is 2 minutes, exponential distribution can tell us the probability that a vehicle will wait less than or more than that time.
+* The *Exponential distribution* is used to represent the waiting time between vehicle arrivals or the time a vehicle spends waiting at a signal. For example, if the average waiting time is 2 minutes, exponential distribution can tell us the probability that a vehicle will wait less than or more than that time.
 
   Formula:
 
@@ -36,7 +36,7 @@ Traffic delays mainly happen because vehicles do not arrive at a junction in a f
   f(t) = \lambda e^{-\lambda t}
   $$
 
-**Why these concepts are better:** Together, Poisson and Exponential give a realistic picture of traffic. Poisson handles how many vehicles arrive, while Exponential handles how long they wait. This combination explains increased travel times more accurately than simple averages.
+*Why these concepts are better:* Together, Poisson and Exponential give a realistic picture of traffic. Poisson handles how many vehicles arrive, while Exponential handles how long they wait. This combination explains increased travel times more accurately than simple averages.
 
 ---
 
@@ -44,7 +44,7 @@ Traffic delays mainly happen because vehicles do not arrive at a junction in a f
 
 Pollution in cities fluctuates depending on traffic volume, weather conditions, and fuel usage. It does not stay at one fixed value but usually varies around an average.
 
-* The **Normal distribution** is used to model this natural variation. For example, if the average CO₂ level on a road is 50 ppm, sometimes it might be 45 ppm and sometimes 55 ppm. Normal distribution captures this variation in a bell-shaped curve.
+* The *Normal distribution* is used to model this natural variation. For example, if the average CO₂ level on a road is 50 ppm, sometimes it might be 45 ppm and sometimes 55 ppm. Normal distribution captures this variation in a bell-shaped curve.
 
   Formula:
 
@@ -52,7 +52,7 @@ Pollution in cities fluctuates depending on traffic volume, weather conditions, 
   f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}
   $$
 
-**Why this concept is better:** Normal distribution is widely used in real-world measurements because most natural fluctuations follow this pattern. It gives us a clear way to estimate pollution levels around a mean value.
+*Why this concept is better:* Normal distribution is widely used in real-world measurements because most natural fluctuations follow this pattern. It gives us a clear way to estimate pollution levels around a mean value.
 
 ---
 
@@ -60,7 +60,7 @@ Pollution in cities fluctuates depending on traffic volume, weather conditions, 
 
 Accidents are uncertain events — on any given day, an accident may or may not happen. To model this kind of event:
 
-* The **Binomial distribution** is used. It deals with repeated trials where there are only two outcomes (accident or no accident). For example, if the probability of an accident on a road is 0.05 on a given day, binomial distribution helps calculate the probability of having exactly 2 accidents in 30 days.
+* The *Binomial distribution* is used. It deals with repeated trials where there are only two outcomes (accident or no accident). For example, if the probability of an accident on a road is 0.05 on a given day, binomial distribution helps calculate the probability of having exactly 2 accidents in 30 days.
 
   Formula:
 
@@ -68,7 +68,7 @@ Accidents are uncertain events — on any given day, an accident may or may not 
   P(X=k) = \binom{n}{k} p^k (1-p)^{n-k}
   $$
 
-**Why this concept is better:** Accidents are binary events (yes or no). Binomial distribution is the most natural and mathematically correct way to model such situations.
+*Why this concept is better:* Accidents are binary events (yes or no). Binomial distribution is the most natural and mathematically correct way to model such situations.
 
 ---
 
@@ -76,7 +76,7 @@ Accidents are uncertain events — on any given day, an accident may or may not 
 
 Drivers do not always pick the same road. They change routes based on traffic conditions. This behavior can be modeled using:
 
-* **Markov Chains**, which describe probabilities of moving from one state (road) to another. For example, if 70% of drivers normally choose Road A and 30% choose Road B, but if Road A is congested the probability might shift to 50% and 50%.
+* *Markov Chains*, which describe probabilities of moving from one state (road) to another. For example, if 70% of drivers normally choose Road A and 30% choose Road B, but if Road A is congested the probability might shift to 50% and 50%.
 
   Formula:
 
@@ -84,7 +84,7 @@ Drivers do not always pick the same road. They change routes based on traffic co
   P_{ij} = P(\text{Next state} = j \mid \text{Current state} = i)
   $$
 
-**Why this concept is better:** Markov Chains handle dynamic decisions over time, which makes them ideal for route-switching behavior.
+*Why this concept is better:* Markov Chains handle dynamic decisions over time, which makes them ideal for route-switching behavior.
 
 ---
 
@@ -92,9 +92,9 @@ Drivers do not always pick the same road. They change routes based on traffic co
 
 Since all these factors (arrivals, waiting times, accidents, pollution, and routes) are random, one single simulation is not enough. Results may change each time.
 
-* **Monte Carlo Simulation** repeats the entire traffic model many times and calculates the average results. This ensures reliable predictions.
+* *Monte Carlo Simulation* repeats the entire traffic model many times and calculates the average results. This ensures reliable predictions.
 
-**Why this concept is better:** Monte Carlo reduces the effect of randomness by considering many possible scenarios, giving us realistic average outcomes.
+*Why this concept is better:* Monte Carlo reduces the effect of randomness by considering many possible scenarios, giving us realistic average outcomes.
 
 ---
 
@@ -108,4 +108,4 @@ By applying these probability models:
 * We can understand driver route choices.
 * We can compare different road layouts with confidence.
 
-**Conclusion:** Probability helps us design road layouts that reduce congestion, control pollution, and improve safety in smart cities.
+*Conclusion:* Probability helps us design road layouts that reduce congestion, control pollution, and improve safety in smart cities.
