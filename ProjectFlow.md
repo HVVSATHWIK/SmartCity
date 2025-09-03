@@ -264,7 +264,7 @@ for seed in [1,2,3,4,5]:
 
 ---
 
-## 16. Suggested timeline (5 weeks, adaptable)
+## 16.timeline (5 weeks, adaptable)
 
 * **Week 1:** data & network setup, baseline model, basic KPIs
 * **Week 2:** probabilistic demand generation, simple simulation, emissions proxy
@@ -274,12 +274,4 @@ for seed in [1,2,3,4,5]:
 
 ---
 
-## 17. Next steps (what I can do now)
 
-If you want, I can:
-
-* Inspect your notebook and adapt this plan to your current code.
-* Provide a runnable minimal example (small grid) implementing the simulation skeleton.
-* Help set up OSMnx ingestion and a synthetic OD generator that plugs into your notebook.
-
-Good luck — this is an excellent, well-scoped project that will show strong application of probability and simulation in urban design. If you want, tell me which subtask you'd like code for first (e.g., OSM ingestion, Poisson demand generator, or SimPy vehicle agent) and I will add runnable code next.
