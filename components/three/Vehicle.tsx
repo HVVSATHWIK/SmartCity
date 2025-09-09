@@ -1,4 +1,7 @@
 
+
+// Fix: Import '@react-three/fiber' to extend JSX namespace for three.js elements.
+import '@react-three/fiber';
 import React from 'react';
 import { Vehicle } from '../../types';
 

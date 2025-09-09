@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { useDashboard } from '../hooks/useCity';
 import { CITIES } from '../constants';
 import MapEditor from './MapEditor';
-import ImpactCard from './three/Building';
+import ImpactCard from './ImpactCard';
 import Pm25Chart from './CityCanvas';
 import GeminiAssistant from './Controls';
 import { RoadParameters } from '../types';
